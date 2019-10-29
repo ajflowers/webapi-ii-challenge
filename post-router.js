@@ -77,7 +77,6 @@ router.post('/', (req, res) => {
     }
 });
 
-
 router.post('/:id/comments', (req, res) => {
     const postID = req.params.id;
     const newComment = req.body;
@@ -114,5 +113,72 @@ router.post('/:id/comments', (req, res) => {
     }    
 });
 
+router.delete('/:id', (req, res) => {
+    const postID = req.params.id;
+
+    db.findById(postID)
+        .then(confirmed => {
+            if (!confirmed.length) {
+                res.status(404).json({ message: "The post with the specified ID does not exist." });
+            } else {
+                db.remove(postID)
+                    .then(count => {
+                        if (count) {
+                            res.status(200).json({ message: `deleted post with ID ${postID}`})
+                        } else {
+                            res.status(500).json({ error: "The post could not be removed" });
+                        }
+                    })
+                    .catch(err => {
+                        console.log('\n=== ERROR ===\n', err);
+                        res.status(500).json({ error: "The post could not be removed" });
+                    });
+            }
+        })
+        .catch(err => {
+            console.log('\n=== ERROR ===\n', err);
+            res.status(500).json({ error: "The post could not be removed" });
+        });
+})
+
+
+router.put('/:id', (req, res) => {
+    const postID = req.params.id;
+    const newInfo = req.body
+
+    db.findById(postID)
+        .then(confirmed => {
+            if (!confirmed.length) {
+                res.status(404).json({ message: "The post with the specified ID does not exist." });
+            } else if(!newInfo.title || !newInfo.contents) {
+                res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+            } else {
+                db.update(postID, newInfo)
+                    .then(count => {
+                        if (count) {
+                            db.findById(postID)
+                            .then(post => {
+                                res.status(200).json(post);                                
+                            })
+                            .catch(err => {
+                                console.log('\n=== ERROR ===\n', err);
+                                res.status(500).json({ error: "The post information could not be modified." });
+                            });
+                            
+                        } else {
+                            res.status(500).json({ error: "The post information could not be modified." });
+                        }
+                    })
+                    .catch(err => {
+                        console.log('\n=== ERROR ===\n', err);
+                        res.status(500).json({ error: "The post information could not be modified." });
+                    });
+            }
+        })
+        .catch(err => {
+            console.log('\n=== ERROR ===\n', err);
+            res.status(500).json({ error: "The post information could not be modified." });
+        });
+})
 
 module.exports = router;
