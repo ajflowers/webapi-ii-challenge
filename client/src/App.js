@@ -1,8 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
 import logo from './logo.svg';
 import './App.css';
 
 function App() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:9003/api/posts')
+      .then(res => console.log(res.data))
+      .catch(err => console.log(err.response));
+  }, [])
+
+
   return (
     <div className="App">
       <header className="App-header">
